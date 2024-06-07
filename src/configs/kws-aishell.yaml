@@ -1,0 +1,80 @@
+# pytorch_lightning==2.0.2
+seed_everything: 123
+trainer:
+  accelerator: gpu
+  strategy: auto
+  devices: 1
+  num_nodes: 1
+  precision: 32-true
+  logger: null
+  callbacks: null
+  fast_dev_run: false
+  max_epochs: null
+  min_epochs: null
+  max_steps: -1
+  min_steps: null
+  max_time: null
+  limit_train_batches: null
+  limit_val_batches: null
+  limit_test_batches: null
+  limit_predict_batches: null
+  overfit_batches: 0.0
+  val_check_interval: null
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: null
+  log_every_n_steps: null
+  enable_checkpointing: null
+  enable_progress_bar: null
+  enable_model_summary: null
+  accumulate_grad_batches: 1
+  gradient_clip_val: null
+  gradient_clip_algorithm: null
+  deterministic: null
+  benchmark: null
+  inference_mode: true
+  use_distributed_sampler: true
+  profiler: null
+  detect_anomaly: false
+  barebones: false
+  plugins: null
+  sync_batchnorm: false
+  reload_dataloaders_every_n_epochs: 0
+  default_root_dir: [DEFAULT_ROOT_DIR]
+data:
+  class_path: data.data_module.KWSDataMod
+  init_args:
+    train_info: 
+      - name: aishell
+        root: [AISHELL_ROOT]
+        kw_type: tts
+    val_info:
+      - name: aishell
+        root: [AISHELL_ROOT]
+        kw_type: tts
+    test_info:
+      name: aishell
+      root: [AISHELL_ROOT]
+      kw_type: [MODALITY(tts/natural)]
+    test_split: test
+    features_size: 
+      - 150
+      - 750
+    batch_size: 1
+    sampling: random
+    num_workers: 8
+    hotwords_per_group: 100
+    whisper_ckpt: openai/whisper-large-v2
+ckpt_path: [CKPT]
+verbose: true
+model:
+  class_path: model.model.KWSModel
+  init_args:
+    large_heads: true
+    adversarial_training: [ADVERSARIAL_TRAINED(true/false)]
+    num_domains: [NUM_DOMAINS]
+    batch_size: 1
+    accumulate_grad_batches: 1
+    learning_rate: 0.00005
+    weight_decay: 0.0
+    beta_1: 0.9
+    beta_2: 0.99

@@ -1,0 +1,163 @@
+# pytorch_lightning==1.9.5
+seed_everything: 123
+trainer:
+  accelerator: gpu
+  strategy: auto
+  devices: 1
+  num_nodes: 1
+  precision: 32-true
+  logger: 
+    class_path: pytorch_lightning.loggers.MLFlowLogger
+    init_args:
+      run_name: [RUN_NAME]
+      experiment_name: keyword-spotting
+      tracking_uri: [URL]
+      log_model: true
+  callbacks: null
+  fast_dev_run: false
+  max_epochs: [MAX_EPOCHS]
+  min_epochs: null
+  max_steps: -1
+  min_steps: null
+  max_time: null
+  limit_train_batches: null
+  limit_val_batches: null
+  limit_test_batches: null
+  limit_predict_batches: null
+  overfit_batches: 0.0
+  val_check_interval: null
+  check_val_every_n_epoch: [EVERY_N_EPOCHS]
+  num_sanity_val_steps: 0
+  log_every_n_steps: 50
+  enable_checkpointing: true
+  enable_progress_bar: null
+  enable_model_summary: null
+  gradient_clip_val: null
+  gradient_clip_algorithm: null
+  deterministic: true
+  benchmark: null
+  inference_mode: true
+  use_distributed_sampler: true
+  profiler: null
+  detect_anomaly: false
+  barebones: false
+  plugins: null
+  sync_batchnorm: false
+  reload_dataloaders_every_n_epochs: 0
+  default_root_dir: [DEFAULT_ROOT_DIR]
+f1_checkpoint:
+  dirpath: null
+  filename: f1-{epoch}-{step}
+  monitor: metrics/f1
+  verbose: false
+  save_last: false
+  save_top_k: 1
+  save_weights_only: false
+  mode: max
+  auto_insert_metric_name: true
+  every_n_train_steps: null
+  train_time_interval: null
+  every_n_epochs: [EVERY_N_EPOCHS]
+  save_on_train_epoch_end: null
+f1_generalization_checkpoint:
+  dirpath: null
+  filename: f1G-{epoch}-{step}
+  monitor: metrics/f1_[F1_CODE(0/1/2/3/zh/en)] -- where [0]:=aishell-TTS, [1]:=aishell-NAT, [2]:=acl-TTS, [3]:=acl-NAT, [zh]:=([0]+[1])/2, [en]:=([2]+[3])/2
+  verbose: false
+  save_last: false
+  save_top_k: 1
+  save_weights_only: false
+  mode: max
+  auto_insert_metric_name: true
+  every_n_train_steps: null
+  train_time_interval: null
+  every_n_epochs: [EVERY_N_EPOCHS]
+  save_on_train_epoch_end: null
+checkpoint_final:
+  dirpath: null
+  filename: final-{epoch}-{step}
+  monitor: null
+  verbose: true
+  save_last: false
+  save_top_k: 1
+  save_weights_only: false
+  mode: min
+  auto_insert_metric_name: true
+  every_n_train_steps: null
+  train_time_interval: null
+  every_n_epochs: 1
+  save_on_train_epoch_end: true
+early_stopping:
+  monitor: metrics/f1_[F1_CODE(0/1/2/3/zh/en)] -- where [0]:=aishell-TTS, [1]:=aishell-NAT, [2]:=acl-TTS, [3]:=acl-NAT, [zh]:=([0]+[1])/2, [en]:=([2]+[3])/2
+  min_delta: 0.0
+  patience: [PATIENCE]
+  verbose: false
+  mode: max
+  strict: true
+  check_finite: true
+  stopping_threshold: null
+  divergence_threshold: null
+  check_on_train_epoch_end: null
+  log_rank_zero_only: false
+data:
+  class_path: data.data_module.KWSDataMod
+  init_args:
+    train_info: 
+      - name: [TRAIN_DATASET_NAME(aishell/mls)]
+        root: [TRAIN_DATASET_ROOT]
+        kw_type: [MODALITY(tts/natural/all)]
+    val_info:
+      - name: aishell
+        root: [AISHELL_ROOT]
+        kw_type: tts
+      - name: aishell
+        root: [AISHELL_ROOT]
+        kw_type: natural
+      - name: acl
+        root: [ACL_ROOT]
+        kw_type: tts
+      - name: acl
+        root: [ACL_ROOT]
+        kw_type: natural
+    test_info:
+      name: aishell
+      root: [AISHELL_ROOT]
+      kw_type: tts
+    test_split: test
+    features_size: 
+      - 150
+      - 750
+    num_workers: 8
+    hotwords_per_group: 100
+    whisper_ckpt: openai/whisper-large-v2
+ckpt_path: null
+model:
+  class_path: model.model.KWSModel
+  init_args:
+    large_heads: true
+    adversarial_training: [ADVERSARIAL_TRAINING(true/false)]
+    dannce: false
+    adversarial_examples_ratio: 0.5
+    adversarial_examples_lr: 1.0e-6
+    adversarial_train_steps: 5
+    adv_kl_weight: 1.0
+    entropy: [ENTROPY_LOSS(true/false)]
+    domain_adversary_weight: 0.1
+    entropy_weight: 0.1
+    supression_decay: 0.1
+    early_adversary_supression: true
+    num_domains: [NUM_DOMAINS] where :=2 if TRAIN_DATASET_NAME==aishell, :=12 if TRAIN_DATASET_NAME==mls
+    sampling: random
+    resample_every_epoch: true
+    kw_type: [MODALITY(tts/natural/all)]
+    kw_p: 0.5
+    batch_size: 20
+    accumulate_grad_batches: 8
+    learning_rate: 5.0e-05
+    features_lr: 5.0e-05
+    classifier_lr: 5.0e-05
+    discriminator_lr: 5.0e-05
+    lr_step: [LR_STEP_SCHEDULER] where :=7 if TRAIN_DATASET_NAME==aishell, :=25 if TRAIN_DATASET_NAME==mls
+    weight_decay: 0.0
+    beta_1: 0.9
+    beta_2: 0.99

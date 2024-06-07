@@ -1,0 +1,21 @@
+confidence_intervals==0.0.3
+edge_tts==6.1.8
+jsonargparse[signatures]>=4.18.0
+matplotlib==3.8.0
+mlflow==2.7.1
+numpy==1.24.1
+openai_whisper==20230918
+pandas==2.2.1
+pydub==0.25.1
+python_crfsuite==0.9.9
+pytorch_lightning==2.1.0
+PyYAML==6.0.1
+scipy==1.12.0
+string2string==0.0.150
+tabulate==0.9.0
+--find-links https://download.pytorch.org/whl/torch_stable.html 
+torch==2.0.1+cu118
+torchaudio==2.0.2+cu118
+torchmetrics==1.2.0
+torchvision==0.15.2+cu118
+transformers==4.37.2

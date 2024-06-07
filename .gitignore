@@ -1,0 +1,5 @@
+__pycache__
+/checkpoints/*
+/datasets/aishell/logfile.log
+/datasets/acl/logfile.log
+/datasets/mls/logfile.log
