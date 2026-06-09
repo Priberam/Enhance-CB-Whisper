@@ -114,6 +114,50 @@ python3 cb-whisper.py test --config configs/cb-whisper-***.yaml
 
 For ease of use, there is one config `yaml` file per dataset. Do not forget to set the paths to the dataset folders and the given checkpoint to evaluate. Important settings that must be introduced are capitalized and between square brackets.
 
+## Efficient KWS: dimensionality reduction (L / LE / LEF)
+
+The `src/efficient_kws/` package contains a self-contained, pruned variant of the
+KWS classifier used for the dimensionality-reduction experiments. Instead of a CNN
+trained on the raw Whisper encoder activations, the keyword and utterance
+activations are first compressed and only then turned into cosine-similarity
+matrices that feed a ResNet classifier. Three projection variants are provided:
+
+* **L** &mdash; *linear*: the similarity matrices are computed on the raw Whisper
+  activations (baseline, no learned projection);
+* **LE** &mdash; *linear + embeddings*: a per-layer MLP compresses the embedding
+  dimension before computing the similarity matrices;
+* **LEF** &mdash; *linear + embeddings + frames*: as **LE**, plus a per-layer
+  temporal `Conv1d` that also compresses the frames dimension.
+
+This package coexists with the original CNN classifier above: it lives under its
+own import namespace (`efficient_kws.*`) and is driven by its own entry point,
+`src/run_efficient_kws.py`. The models are trained on **MLS-KWS** and evaluated on
+the test sets of **ACL6060** and **Aishell-KWS**.
+
+### Training
+
+```bash
+cd src/
+python3 run_efficient_kws.py fit --config efficient_kws/configs/train-L.yaml
+python3 run_efficient_kws.py fit --config efficient_kws/configs/train-LE.yaml
+python3 run_efficient_kws.py fit --config efficient_kws/configs/train-LEF.yaml
+```
+
+### Evaluation
+
+```bash
+cd src/
+python3 run_efficient_kws.py test --config efficient_kws/configs/eval-L-comp-acl.yaml
+```
+
+There is one evaluation config per projection variant and dataset, i.e.
+`eval-{L,LE,LEF}-comp-{acl,aishell}.yaml`. As in the configs above, settings
+that must be provided are capitalized and between square brackets: the dataset
+roots (`[MLS_ROOT]`, `[ACL_ROOT]`, `[AISHELL_ROOT]`), the checkpoint to evaluate
+(`[CKPT]`), the operating point found on the dev set (`[THRESHOLD]`), the
+checkpoints directory (`[DEFAULT_ROOT_DIR]`) and the MLflow tracking URI
+(`[URL]`).
+
 ## License
 
 See the [LICENSE.md](LICENSE.md) file for details.
