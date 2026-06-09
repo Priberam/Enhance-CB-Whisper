@@ -164,6 +164,21 @@ See the [LICENSE.md](LICENSE.md) file for details.
 
 ## Citation
 
-If you use any of the resources in this repository, please cite the following paper:
+If you use any of the resources in this repository, please cite the following papers:
 
-Citation will be added in the future.
+```bibtex
+@inproceedings{cbwhisper_userfeedback_2024,
+  title     = {Adding User Feedback to Enhance CB-Whisper},
+  author    = {Raul Monteiro},
+  booktitle = {Proc. Interspeech 2024},
+  year      = {2024},
+}
+
+@inproceedings{massive_openvocab_kws_2026,
+  title     = {Massive Open-Vocabulary Keyword-Spotting},
+  author    = {Leonor Barreiros, Raul Monteiro, Afonso Mendes, Gonçalo M. Correia},
+  booktitle = {Proc. Interspeech 2026},
+  year      = {2026},
+  note      = {Accepted; to appear},
+}
+```
