@@ -1,7 +1,7 @@
 
-# Adding User Feedback To Enhance CB-Whisper
+# Adding User Feedback To Enhance CB-Whisper; Massive Open-Vocabulary Keyword-Spotting
 
-This repository contains code that allows to reproduce all experiments performed in the paper "Adding User Feedback To Enhance CB-Whisper".
+This repository contains code that allows to reproduce all experiments performed in the papers "Adding User Feedback To Enhance CB-Whisper" and "Massive Open-Vocabulary Keyword-Spotting".
 
 ## Setup
 
@@ -62,7 +62,7 @@ The CNN classifier for KWS was inspired in the one originally proposed in [CB-Wh
 * DANN and [DANNCE](https://arxiv.org/abs/2102.03924) implementation;
 * Validation of checkpoints using more than one dataset (for domain generalization analysis).
 
-### Training
+## Adding User Feedback To Enhance CB-Whisper
 
 In the project directory, do as follows
 
@@ -96,7 +96,7 @@ python3 kws.py test --config configs/kws-***.yaml
 
 For ease of use, there is one config `yaml` file per dataset. Do not forget to set the paths to the dataset folders and the given checkpoint to evaluate. Important settings that must be introduced are capitalized and between square brackets.
 
-## Evaluate CB-Whisper with PBAWhisper
+### Evaluate CB-Whisper with PBAWhisper
 
 The following can be used to evaluate the entity recall of the CB-Whisper model on the test sets of the different datasets, using the KWS classifiers developed with these scripts. These results were not reported in the paper "Adding User Feedback To Enhance CB-Whisper". This version of CB-Whisper uses a wrapped version of Huggingface's `WhisperForConditionalGeneration`, also known as PBAWhisper, that can perform longform transcription jointly with keyword spotting on the go.
 
@@ -114,25 +114,15 @@ python3 cb-whisper.py test --config configs/cb-whisper-***.yaml
 
 For ease of use, there is one config `yaml` file per dataset. Do not forget to set the paths to the dataset folders and the given checkpoint to evaluate. Important settings that must be introduced are capitalized and between square brackets.
 
-## Efficient KWS: dimensionality reduction (L / LE / LEF)
+## Massive Open-Vocabulary Keyword-Spotting
 
-The `src/efficient_kws/` package contains a self-contained, pruned variant of the
-KWS classifier used for the dimensionality-reduction experiments. Instead of a CNN
-trained on the raw Whisper encoder activations, the keyword and utterance
-activations are first compressed and only then turned into cosine-similarity
-matrices that feed a ResNet classifier. Three projection variants are provided:
+The `src/efficient_kws/` package contains a self-contained, pruned variant of the KWS classifier used for recreating the experiments in "Massive Open-Vocabulary Keyword-Spotting". The keyword and utterance embeddings are first compressed and only then turned into cosine-similarity matrices that feed a ResNet classifier. Three projection variants are provided:
 
-* **L** &mdash; *linear*: the similarity matrices are computed on the raw Whisper
-  activations (baseline, no learned projection);
-* **LE** &mdash; *linear + embeddings*: a per-layer MLP compresses the embedding
-  dimension before computing the similarity matrices;
-* **LEF** &mdash; *linear + embeddings + frames*: as **LE**, plus a per-layer
-  temporal `Conv1d` that also compresses the frames dimension.
+* **L** &mdash; *layer*: the similarity matrices are computed on the raw Whisper embeddings with spase layer selection;
+* **LE** &mdash; *layer + embeddings*: as **L**, plus a per-layer MLP compresses the embedding dimension before computing the similarity matrices;
+* **LEF** &mdash; *layer + embeddings + frames*: as **LE**, plus a per-layer temporal `Conv1d` that also compresses the frames dimension.
 
-This package coexists with the original CNN classifier above: it lives under its
-own import namespace (`efficient_kws.*`) and is driven by its own entry point,
-`src/run_efficient_kws.py`. The models are trained on **MLS-KWS** and evaluated on
-the test sets of **ACL6060** and **Aishell-KWS**.
+This package coexists with the original CNN classifier above: it lives under its own import namespace (`efficient_kws.*`) and is driven by its own entry point, `src/run_efficient_kws.py`. The models are trained on **MLS-KWS** and evaluated on the test sets of **ACL6060** and **Aishell-KWS**.
 
 ### Training
 
@@ -150,13 +140,7 @@ cd src/
 python3 run_efficient_kws.py test --config efficient_kws/configs/eval-L-comp-acl.yaml
 ```
 
-There is one evaluation config per projection variant and dataset, i.e.
-`eval-{L,LE,LEF}-comp-{acl,aishell}.yaml`. As in the configs above, settings
-that must be provided are capitalized and between square brackets: the dataset
-roots (`[MLS_ROOT]`, `[ACL_ROOT]`, `[AISHELL_ROOT]`), the checkpoint to evaluate
-(`[CKPT]`), the operating point found on the dev set (`[THRESHOLD]`), the
-checkpoints directory (`[DEFAULT_ROOT_DIR]`) and the MLflow tracking URI
-(`[URL]`).
+There is one evaluation config per projection variant and dataset, i.e. `eval-{L,LE,LEF}-comp-{acl,aishell}.yaml`. As in the configs above, settings that must be provided are capitalized and between square brackets: the dataset roots (`[MLS_ROOT]`, `[ACL_ROOT]`, `[AISHELL_ROOT]`), the checkpoint to evaluate (`[CKPT]`), the operating point found on the dev set (`[THRESHOLD]`), the checkpoints directory (`[DEFAULT_ROOT_DIR]`) and the MLflow tracking URI (`[URL]`).
 
 ## License
 
