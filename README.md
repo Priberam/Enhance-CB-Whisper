@@ -1,7 +1,7 @@
 
-# Adding User Feedback To Enhance CB-Whisper
+# Adding User Feedback To Enhance CB-Whisper; Massive Open-Vocabulary Keyword-Spotting
 
-This repository contains code that allows to reproduce all experiments performed in the paper "Adding User Feedback To Enhance CB-Whisper".
+This repository contains code that allows to reproduce all experiments performed in the papers "Adding User Feedback To Enhance CB-Whisper" and "Massive Open-Vocabulary Keyword-Spotting".
 
 ## Setup
 
@@ -62,7 +62,7 @@ The CNN classifier for KWS was inspired in the one originally proposed in [CB-Wh
 * DANN and [DANNCE](https://arxiv.org/abs/2102.03924) implementation;
 * Validation of checkpoints using more than one dataset (for domain generalization analysis).
 
-### Training
+## Adding User Feedback To Enhance CB-Whisper
 
 In the project directory, do as follows
 
@@ -96,7 +96,7 @@ python3 kws.py test --config configs/kws-***.yaml
 
 For ease of use, there is one config `yaml` file per dataset. Do not forget to set the paths to the dataset folders and the given checkpoint to evaluate. Important settings that must be introduced are capitalized and between square brackets.
 
-## Evaluate CB-Whisper with PBAWhisper
+### Evaluate CB-Whisper with PBAWhisper
 
 The following can be used to evaluate the entity recall of the CB-Whisper model on the test sets of the different datasets, using the KWS classifiers developed with these scripts. These results were not reported in the paper "Adding User Feedback To Enhance CB-Whisper". This version of CB-Whisper uses a wrapped version of Huggingface's `WhisperForConditionalGeneration`, also known as PBAWhisper, that can perform longform transcription jointly with keyword spotting on the go.
 
@@ -114,12 +114,55 @@ python3 cb-whisper.py test --config configs/cb-whisper-***.yaml
 
 For ease of use, there is one config `yaml` file per dataset. Do not forget to set the paths to the dataset folders and the given checkpoint to evaluate. Important settings that must be introduced are capitalized and between square brackets.
 
+## Massive Open-Vocabulary Keyword-Spotting
+
+The `src/efficient_kws/` package contains a self-contained, pruned variant of the KWS classifier used for recreating the experiments in "Massive Open-Vocabulary Keyword-Spotting". The keyword and utterance embeddings are first compressed and only then turned into cosine-similarity matrices that feed a ResNet classifier. Three projection variants are provided:
+
+* **L** &mdash; *layer*: the similarity matrices are computed on the raw Whisper embeddings with spase layer selection;
+* **LE** &mdash; *layer + embeddings*: as **L**, plus a per-layer MLP compresses the embedding dimension before computing the similarity matrices;
+* **LEF** &mdash; *layer + embeddings + frames*: as **LE**, plus a per-layer temporal `Conv1d` that also compresses the frames dimension.
+
+This package coexists with the original CNN classifier above: it lives under its own import namespace (`efficient_kws.*`) and is driven by its own entry point, `src/run_efficient_kws.py`. The models are trained on **MLS-KWS** and evaluated on the test sets of **ACL6060** and **Aishell-KWS**.
+
+### Training
+
+```bash
+cd src/
+python3 run_efficient_kws.py fit --config efficient_kws/configs/train-L.yaml
+python3 run_efficient_kws.py fit --config efficient_kws/configs/train-LE.yaml
+python3 run_efficient_kws.py fit --config efficient_kws/configs/train-LEF.yaml
+```
+
+### Evaluation
+
+```bash
+cd src/
+python3 run_efficient_kws.py test --config efficient_kws/configs/eval-L-comp-acl.yaml
+```
+
+There is one evaluation config per projection variant and dataset, i.e. `eval-{L,LE,LEF}-comp-{acl,aishell}.yaml`. As in the configs above, settings that must be provided are capitalized and between square brackets: the dataset roots (`[MLS_ROOT]`, `[ACL_ROOT]`, `[AISHELL_ROOT]`), the checkpoint to evaluate (`[CKPT]`), the operating point found on the dev set (`[THRESHOLD]`), the checkpoints directory (`[DEFAULT_ROOT_DIR]`) and the MLflow tracking URI (`[URL]`).
+
 ## License
 
 See the [LICENSE.md](LICENSE.md) file for details.
 
 ## Citation
 
-If you use any of the resources in this repository, please cite the following paper:
+If you use any of the resources in this repository, please cite the following papers:
 
-Citation will be added in the future.
+```bibtex
+@inproceedings{cbwhisper_userfeedback_2024,
+  title     = {Adding User Feedback to Enhance CB-Whisper},
+  author    = {Raul Monteiro},
+  booktitle = {Proc. Interspeech 2024},
+  year      = {2024},
+}
+
+@inproceedings{massive_openvocab_kws_2026,
+  title     = {Massive Open-Vocabulary Keyword-Spotting},
+  author    = {Leonor Barreiros, Raul Monteiro, Afonso Mendes, Gonçalo M. Correia},
+  booktitle = {Proc. Interspeech 2026},
+  year      = {2026},
+  note      = {Accepted; to appear},
+}
+```
